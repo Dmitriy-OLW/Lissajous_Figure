@@ -1,0 +1,142 @@
+<html>
+<head>
+	<link rel="stylesheet" href="h2.css" type="text/css">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>Фигуры Лиссажу</title>
+	<script type="text/javascript" src="https://yandex.st/jquery/1.8.2/jquery.min.js"></script>
+	
+	<style type="text/css">
+		* {padding: 0; margin: 0; font-size: 13px;}
+		body { font-family: Arial, sans-serif; }
+		canvas { border: 1px solid black; }
+		.container { display: flex; }
+		.sidebar { width: 200px; padding: 10px; }
+		.sidebar p { margin-top: 12px; }
+		.sidebar input[type="text"], .sidebar input[type="range"] { width: 100%; }
+		.sidebar input[type="button"] { width: 100%; }
+		.grid {
+			stroke: lightgray;
+			stroke-width: 0.5;
+		}
+	</style>
+</head>
+	
+<body>
+
+<div class="container">
+	<div class="sidebar">
+		<p style="font-weight: bold;">Построение фигур Лиссажу</p>
+		<p>
+			Коэффициент X:
+			<br />
+			<input type="text" name="koeff_x" id="koeff_x" value="1">
+		</p>
+		<p>
+			Коэффициент Y:
+			<br />
+			<input type="text" name="koeff_y" id="koeff_y" value="1">
+		</p>
+		<p>
+			<input type="checkbox" name="faza_change" id="faza_change">
+			<label for="faza_change">сдвиг фазы</label>
+		</p>
+		<p>
+			Интервал обновления анимации<br>(Чем меньше, тем быстрее):
+			<br />
+			<input type="range" id="speed" min="10" max="1000" value="100">
+		</p>
+		<p>
+			<input type="button" value="Остановить анимацию" onClick="stopAnimation();">
+		</p>
+		<p>
+			<input type="button" value="Обновить анимацию" onClick="update_animation();">
+		</p>
+	</div>
+	<div>
+		<canvas id="spiral" width="600" height="600"></canvas>
+	</div>
+</div>
+
+<script>
+var faza = 0;
+var faza_change = false;
+var koeff_x = 1;
+var koeff_y = 1;
+var animationInterval;
+var points = [];
+
+function update_animation() {
+	koeff_x = parseFloat($("#koeff_x").val()) || 1;
+	koeff_y = parseFloat($("#koeff_y").val()) || 1;
+	faza_change = $("#faza_change").prop('checked');
+	if (animationInterval) clearInterval(animationInterval);
+	animationInterval = setInterval(draw, $("#speed").val());
+}
+
+function stopAnimation() {
+	if (animationInterval) {
+		clearInterval(animationInterval);
+		animationInterval = null;
+	}
+}
+
+function draw() {
+	var canvas = document.getElementById('spiral');
+	if (canvas.getContext) {
+		var ctx = canvas.getContext('2d');
+		ctx.clearRect(0, 0, 600, 600);
+		drawGrid(ctx);
+		drawAxes(ctx);
+	
+		var center_x = 300;
+		var center_y = 300;
+		var amplituda = 250;
+		
+		// Установите цвет фигуры здесь
+		ctx.fillStyle = "Green";
+		
+		for (var angle = 0; angle < 50; angle += 0.02) {
+			var x = center_x + amplituda * Math.cos(koeff_x * angle);
+			var y = center_y + amplituda * Math.cos(koeff_y * angle + faza);
+			points.push({x: x, y: y});
+			ctx.fillRect(x, y, 3, 3);
+		}
+		
+		if (faza_change) {
+			faza += 0.05;
+		}
+	}
+}
+
+function drawGrid(ctx) {
+	ctx.beginPath();
+	for (var i = 0; i <= 600; i += 20) {
+		ctx.moveTo(i, 0);
+		ctx.lineTo(i, 600);
+		ctx.moveTo(0, i);
+		ctx.lineTo(600, i);
+	}
+	ctx.strokeStyle = "lightgray";
+	ctx.stroke();
+}
+
+
+function drawAxes(ctx) {
+
+	ctx.beginPath();
+	ctx.moveTo(0, 300);
+	ctx.lineTo(600, 300); 
+	
+	ctx.moveTo(300, 0);
+	ctx.lineTo(300, 600); 
+	ctx.strokeStyle = "black";
+	ctx.stroke();
+
+}
+
+
+
+</script>
+
+</body>
+</html>
